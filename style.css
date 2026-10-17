@@ -30,12 +30,7 @@ header {
     display: flex; align-items: center; justify-content: space-between; gap: 10px;
     position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 }
-.icon-btn { background: none; border: none; color: white; font-size: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-.nav-icon { width: 24px; height: 24px; fill: currentColor; }
-.menu-svg-icon { width: 20px; height: 20px; fill: currentColor; color: var(--primary-gold); }
-.logout-item { color: var(--danger) !important; }
-.logout-item .menu-svg-icon { color: var(--danger); }
-
+.icon-btn { background: none; border: none; color: white; font-size: 22px; cursor: pointer; }
 .search-bar-wrap { flex: 1; }
 .search-bar-wrap input {
     width: 100%; background: white; border: none; padding: 8px 12px;
@@ -76,6 +71,17 @@ main { padding: 15px; max-width: 600px; margin: 0 auto; }
     justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primary-gold);
     position: sticky; top: 0; z-index: 10;
 }
+
+.hotel-location-banner {
+    background: var(--card-bg); padding: 15px 20px; border-bottom: 1px solid var(--border-color); text-align: center;
+}
+.btn-map {
+    background: #2563eb; color: white; text-decoration: none; padding: 10px 18px; font-weight: bold;
+    border-radius: 8px; display: inline-flex; align-items: center; gap: 8px; font-size: 13px; margin-top: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+.btn-map:hover { background: #1d4ed8; }
+
 .tab-navigation { display: flex; background-color: #1a1a1a; overflow-x: auto; position: sticky; top: 55px; z-index: 9; }
 .tab-btn { background: none; border: none; color: #bbb; padding: 12px 18px; font-size: 13px; font-weight: bold; cursor: pointer; border-bottom: 3px solid transparent; white-space: nowrap; }
 .tab-btn.active { color: var(--primary-gold); border-bottom-color: var(--primary-gold); background: #222; }
@@ -97,7 +103,17 @@ main { padding: 15px; max-width: 600px; margin: 0 auto; }
 
 .form-group { margin-bottom: 10px; text-align: left; }
 .form-group label { display: block; font-size: 12px; color: var(--text-secondary); margin-bottom: 3px; }
-.form-group input { width: 100%; padding: 8px; background: var(--bg-color); border: 1px solid var(--border-color); color: white; border-radius: 6px; }
+
+/* LIGHT MODE TEXT VISIBILITY FIX */
+.form-group input { 
+    width: 100%; 
+    padding: 8px; 
+    background: var(--bg-color); 
+    border: 1px solid var(--border-color); 
+    color: var(--text-color) !important; 
+    border-radius: 6px; 
+}
+.form-group input::placeholder { color: var(--text-secondary); opacity: 0.7; }
 
 .google-btn-tiktok {
     width: 100%; padding: 12px; background: #ffffff; color: #000000; font-weight: bold;
@@ -106,7 +122,7 @@ main { padding: 15px; max-width: 600px; margin: 0 auto; }
     box-shadow: 0 4px 10px rgba(0,0,0,0.2);
 }
 
-.payment-box { background: rgba(223, 177, 91, 0.1); border: 1px dashed var(--primary-gold); padding: 12px; border-radius: 8px; margin-bottom: 12px; font-size: 13px; }
+.payment-box { background: rgba(223, 177, 91, 0.1); border: 1px dashed var(--primary-gold); padding: 12px; border-radius: 8px; margin-bottom: 12px; font-size: 13px; color: var(--text-color); }
 
 .account-switcher-box {
     background: #111; border: 1px solid var(--border-color); border-radius: 8px; padding: 10px;
@@ -130,7 +146,7 @@ main { padding: 15px; max-width: 600px; margin: 0 auto; }
 .ai-header { background: #003580; color: white; padding: 12px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; }
 .ai-body { flex: 1; padding: 10px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; font-size: 13px; }
 .ai-footer { padding: 10px; background: #111; display: flex; gap: 5px; border-top: 1px solid var(--border-color); }
-.ai-footer input { flex: 1; padding: 8px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: white; font-size: 13px; }
+.ai-footer input { flex: 1; padding: 8px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 13px; }
 .ai-footer button { background: var(--primary-gold); border: none; padding: 8px 15px; border-radius: 4px; font-weight: bold; cursor: pointer; color: #000; }
 .ai-msg { padding: 8px 12px; border-radius: 8px; max-width: 80%; line-height: 1.4; }
 .ai-msg.user { background: #2563eb; color: white; align-self: flex-end; }
