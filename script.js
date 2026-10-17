@@ -212,7 +212,7 @@ function getTranslatedHotelName(rawName) {
     return rawName;
 }
 
-window.onload = function() {
+document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('langSelect').value = currentLang;
     applyLanguage(currentLang);
 
@@ -225,7 +225,51 @@ window.onload = function() {
         updateAccountButtonUI(user.profilePic);
         showActiveAccountPreview(user);
     }
-};
+
+    const btnContinue = document.getElementById('btnContinue');
+    if (btnContinue) {
+        btnContinue.addEventListener('click', () => {
+            document.getElementById('welcomePage').classList.add('hidden');
+        });
+    }
+
+    const menuToggle = document.getElementById('menuToggle');
+    const drawer = document.getElementById('drawer');
+    const overlay = document.getElementById('overlay');
+    if (menuToggle) {
+        menuToggle.addEventListener('click', () => { drawer.classList.add('open'); overlay.classList.add('active'); });
+    }
+    const drawerClose = document.getElementById('drawerClose');
+    if (drawerClose) {
+        drawerClose.addEventListener('click', () => { drawer.classList.remove('open'); overlay.classList.remove('active'); });
+    }
+    if (overlay) {
+        overlay.addEventListener('click', () => { drawer.classList.remove('open'); overlay.classList.remove('active'); });
+    }
+
+    database.ref('hotels').on('value', (snapshot) => {
+        allHotelsData = [];
+        snapshot.forEach((child) => {
+            let h = child.val();
+            let key = child.key;
+            
+            if (key !== 'hotel_005' && key !== 'htoel_005' && h && (h.name || (h.info && h.info.name) || h.mapUrl)) {
+                let data = h.info ? { ...h.info, ...h } : h;
+                allHotelsData.push({ key: key, data: data });
+            }
+        });
+        renderHotelsList(allHotelsData);
+    });
+
+    const themeToggle = document.getElementById('themeToggle');
+    if (themeToggle) {
+        themeToggle.addEventListener('click', () => {
+            const current = document.documentElement.getAttribute('data-theme');
+            const next = current === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', next);
+        });
+    }
+});
 
 function changeLanguage(lang) {
     currentLang = lang;
@@ -266,7 +310,6 @@ function applyLanguage(lang) {
     document.getElementById('btnSubmitAccount').innerText = t.btnSubmitAccount;
 
     document.getElementById('payModalTitle').innerText = t.payModalTitle;
-    document.getElementById('paymentOptionsBox').innerHTML = t.paymentOptions;
     document.getElementById('payLblName').innerText = t.payLblName;
     document.getElementById('payLblPhone').innerText = t.payLblPhone;
     document.getElementById('payLblTx').innerText = t.payLblTx;
@@ -355,31 +398,6 @@ function openGoogleLogin() {
         });
 }
 
-document.getElementById('btnContinue').addEventListener('click', () => {
-    document.getElementById('welcomePage').classList.add('hidden');
-});
-
-const menuToggle = document.getElementById('menuToggle');
-const drawer = document.getElementById('drawer');
-const overlay = document.getElementById('overlay');
-menuToggle.addEventListener('click', () => { drawer.classList.add('open'); overlay.classList.add('active'); });
-document.getElementById('drawerClose').addEventListener('click', () => { drawer.classList.remove('open'); overlay.classList.remove('active'); });
-overlay.addEventListener('click', () => { drawer.classList.remove('open'); overlay.classList.remove('active'); });
-
-database.ref('hotels').on('value', (snapshot) => {
-    allHotelsData = [];
-    snapshot.forEach((child) => {
-        let h = child.val();
-        let key = child.key;
-        
-        if (key !== 'hotel_005' && key !== 'htoel_005' && h && (h.name || (h.info && h.info.name))) {
-            let data = h.info ? { ...h.info, ...h } : h;
-            allHotelsData.push({ key: key, data: data });
-        }
-    });
-    renderHotelsList(allHotelsData);
-});
-
 function renderHotelsList(hotelsList) {
     const hotelsContainer = document.getElementById('hotelsContainer');
     hotelsContainer.innerHTML = '';
@@ -430,6 +448,38 @@ function openHotelDetails(hotelRawName, hotelKey) {
     let tag = translations[currentLang].servicesTag;
     document.getElementById('modalHotelTitle').textContent = displayHotelName.toUpperCase() + ' - ' + tag;
     document.getElementById('hotelModal').classList.add('active');
+
+    // Strictly ID-based Map Location Lookup from Firebase
+    let mapContainer = document.getElementById('hotelMapContainer');
+    let noMapText = document.getElementById('noMapText');
+    let mapBtn = document.getElementById('detailMapBtn');
+
+    // Reset visibility to prevent ghost data from previous hotel
+    mapContainer.classList.add('hidden');
+    noMapText.classList.add('hidden');
+
+    database.ref('hotels/' + hotelKey).once('value', (snapshot) => {
+        let hData = snapshot.val();
+        if (hData) {
+            let rawMapUrl = hData.mapUrl || '';
+            if (rawMapUrl) {
+                let finalMapUrl = rawMapUrl.trim();
+                if (!finalMapUrl.startsWith('http://') && !finalMapUrl.startsWith('https://')) {
+                    finalMapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(finalMapUrl)}`;
+                }
+                mapBtn.href = finalMapUrl;
+                mapContainer.classList.remove('hidden');
+                noMapText.classList.add('hidden');
+            } else {
+                mapContainer.classList.add('hidden');
+                noMapText.classList.remove('hidden');
+            }
+        } else {
+            mapContainer.classList.add('hidden');
+            noMapText.classList.remove('hidden');
+        }
+    });
+
     loadSpecificHotelServices(hotelKey);
 }
 
@@ -474,6 +524,7 @@ function loadSpecificHotelServices(hotelKey) {
     });
 }
 
+// በክፍያ ሰዓት የሆቴሉን የራሱን የክፍያ አካውንት ከዳታቤዝ አምጥቶ የሚያሳይ ሎጂክ
 function initiateBooking(item) {
     let savedUser = localStorage.getItem('adane_customer');
     if (!savedUser) {
@@ -486,6 +537,29 @@ function initiateBooking(item) {
     document.getElementById('modalServicePrice').innerText = 'Price: ' + item.price + ' ETB';
     document.getElementById('payCustName').value = user.name || '';
     document.getElementById('payCustPhone').value = user.phone || '';
+
+    // የተመረጠውን ሆቴል ዩኒክ ኪ (activeHotelKeyForBooking) በመጠቀም የራሱን አካውንት እናገኛለን
+    database.ref('hotels/' + activeHotelKeyForBooking).once('value', (snapshot) => {
+        let hData = snapshot.val();
+        let paymentBox = document.getElementById('paymentOptionsBox');
+        
+        if (hData && (hData.telebirr || hData.bankAccount)) {
+            let tele = hData.telebirr || "N/A";
+            let bank = hData.bankAccount || "N/A";
+            paymentBox.innerHTML = `
+                <b>${hData.name || 'Hotel'} - Payment Options:-</b><br>
+                • Telebirr: ${tele}<br>
+                • Bank Account: ${bank}
+            `;
+        } else {
+            paymentBox.innerHTML = `
+                <b>Payment Options:-</b><br>
+                • Telebirr: 0961807959 (Default)<br>
+                • Commercial Bank of Ethiopia: 1000123456789 (Default)
+            `;
+        }
+    });
+
     document.getElementById('paymentModal').classList.add('active');
 }
 
@@ -559,6 +633,7 @@ function showOneTimeQrCode(qrToken) {
     document.getElementById('qrCodeTextDisplay').innerText = 'Code: ' + qrToken;
     document.getElementById('qrModal').classList.add('active');
 }
+
 function closeQrModal() { document.getElementById('qrModal').classList.remove('active'); }
 
 function openHistoryModal() {
@@ -591,6 +666,7 @@ function openHistoryModal() {
         });
     });
 }
+
 function closeHistoryModal() { document.getElementById('historyModal').classList.remove('active'); }
 
 function saveCustomerAccount(e) {
@@ -641,7 +717,6 @@ function updateAccountButtonUI(picUrl) {
 }
 
 function logoutCustomer() {
-    localStorage.getItem('adane_customer');
     localStorage.removeItem('adane_customer');
     auth.signOut().catch(() => {});
     alert("🚪 Logged out.");
@@ -704,9 +779,3 @@ function generateSmartAiResponse(userQuery) {
     if(lang === 'ti') return "ኣነ ናይ ሆቴልን ጥዕናን AI አማካሪ እየ! ዝኾነ ሕቶ ክትሕቱ ትኽእሉ።";
     return "እኔ የሆቴል እና የጤና AI አማካሪዎ ነኝ! ማንኛውንም ጥያቄ መጠየቅ ይችላሉ።";
 }
-
-document.getElementById('themeToggle').addEventListener('click', () => {
-    const current = document.documentElement.getAttribute('data-theme');
-    const next = current === 'light' ? 'dark' : 'light';
-    document.documentElement.setAttribute('data-theme', next);
-});
