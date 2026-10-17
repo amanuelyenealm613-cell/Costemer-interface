@@ -103,7 +103,7 @@ const translations = {
         thId: "Order ID", thService: "Service", thPrice: "Price", thStatus: "Status",
         tabRooms: "🛏️ Rooms", tabRest: "🍔 Restaurant", tabPool: "🏊 Swimming Pool", tabSpa: "💆 Spa", tabClub: "💃 Night Club",
         aiHeader: "AI Hotel & Health Advisor",
-        aiWelcome: "Hello! I am your AI assistant. You can ask me anything about hotels, prices, fitness, diet, diabetes, blood pressure, heart health, or malaria.",
+        aiWelcome: "Hello! I am your AI assistant. You can ask me anything about hotels, prices, fitness, diet, diabetes, blood pressure, or general health.",
         aiPlaceholder: "Type your question here...",
         aiSend: "Send",
         stockLabel: "Remaining: ",
@@ -641,6 +641,7 @@ function updateAccountButtonUI(picUrl) {
 }
 
 function logoutCustomer() {
+    localStorage.getItem('adane_customer');
     localStorage.removeItem('adane_customer');
     auth.signOut().catch(() => {});
     alert("🚪 Logged out.");
