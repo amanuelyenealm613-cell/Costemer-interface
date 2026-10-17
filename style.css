@@ -30,7 +30,12 @@ header {
     display: flex; align-items: center; justify-content: space-between; gap: 10px;
     position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 }
-.icon-btn { background: none; border: none; color: white; font-size: 22px; cursor: pointer; }
+.icon-btn { background: none; border: none; color: white; font-size: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.nav-icon { width: 24px; height: 24px; fill: currentColor; }
+.menu-svg-icon { width: 20px; height: 20px; fill: currentColor; color: var(--primary-gold); }
+.logout-item { color: var(--danger) !important; }
+.logout-item .menu-svg-icon { color: var(--danger); }
+
 .search-bar-wrap { flex: 1; }
 .search-bar-wrap input {
     width: 100%; background: white; border: none; padding: 8px 12px;
