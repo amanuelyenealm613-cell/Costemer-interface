@@ -14,6 +14,7 @@ let selectedServiceData = null;
 let activeHotelKeyForBooking = "";
 let activeHotelRawName = "";
 let currentLang = localStorage.getItem('adane_lang') || 'am';
+let slideInterval = null;
 
 const hotelTranslations = {
     "Amanuel": { am: "አማኑኤል", en: "Amanuel", om: "Amaanu'el", ti: "አማኑኤል" },
@@ -64,7 +65,6 @@ const translations = {
         aiSend: "ላክ",
         stockLabel: "የቀረው፡ ",
         bookBtn: "ቦታ ያስያዙ",
-        openBtn: "OPEN",
         servicesTag: "አገልግሎቶች",
         doneStatus: "ተፈጽሟል",
         noHotels: "ምንም ሆቴል የለም"
@@ -108,7 +108,6 @@ const translations = {
         aiSend: "Send",
         stockLabel: "Remaining: ",
         bookBtn: "Book Now",
-        openBtn: "OPEN",
         servicesTag: "SERVICES",
         doneStatus: "Completed",
         noHotels: "No hotels found"
@@ -152,7 +151,6 @@ const translations = {
         aiSend: "Ergi",
         stockLabel: "Hafte: ",
         bookBtn: "Bakka Qabadhu",
-        openBtn: "BANI",
         servicesTag: "Tajaajiloota",
         doneStatus: "Raawwatameera",
         noHotels: "Hoteelli hin jiru"
@@ -196,7 +194,6 @@ const translations = {
         aiSend: "ልአኽ",
         stockLabel: "ዝተረፈ፡ ",
         bookBtn: "ቦታ ግዛእ",
-        openBtn: "OPEN",
         servicesTag: "ኣገልግሎታት",
         doneStatus: "ተፈጺሙ",
         noHotels: "ዝኾነ ሆቴል የለን"
@@ -415,7 +412,7 @@ function renderHotelsList(hotelsList) {
         let location = h.location || h.phone || '';
         
         let cardHtml = `
-            <div class="list-card">
+            <div class="list-card" onclick="openHotelDetails('${rawName.replace(/'/g, "\\'")}', '${item.key}')">
                 <div class="card-info">
                     <div class="circle-icon" style="background-image: url('${img}'); background-size: cover; background-position: center;">${img ? '' : displayHotelName.charAt(0)}</div>
                     <div>
@@ -423,7 +420,6 @@ function renderHotelsList(hotelsList) {
                         <p style="font-size: 12px; color: var(--text-secondary);">${location}</p>
                     </div>
                 </div>
-                <button class="btn-open" onclick="openHotelDetails('${rawName.replace(/'/g, "\\'")}', '${item.key}')">${t.openBtn}</button>
             </div>
         `;
         hotelsContainer.innerHTML += cardHtml;
@@ -449,33 +445,63 @@ function openHotelDetails(hotelRawName, hotelKey) {
     document.getElementById('modalHotelTitle').textContent = displayHotelName.toUpperCase() + ' - ' + tag;
     document.getElementById('hotelModal').classList.add('active');
 
-    // Strictly ID-based Map Location Lookup from Firebase
-    let mapContainer = document.getElementById('hotelMapContainer');
-    let noMapText = document.getElementById('noMapText');
-    let mapBtn = document.getElementById('detailMapBtn');
-
-    // Reset visibility to prevent ghost data from previous hotel
-    mapContainer.classList.add('hidden');
-    noMapText.classList.add('hidden');
+    if (slideInterval) clearInterval(slideInterval);
 
     database.ref('hotels/' + hotelKey).once('value', (snapshot) => {
         let hData = snapshot.val();
+        let slideshowContainer = document.getElementById('hotelSlideshow');
+        slideshowContainer.innerHTML = '';
+
+        let images = [];
         if (hData) {
-            let rawMapUrl = hData.mapUrl || '';
-            if (rawMapUrl) {
-                let finalMapUrl = rawMapUrl.trim();
-                if (!finalMapUrl.startsWith('http://') && !finalMapUrl.startsWith('https://')) {
-                    finalMapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(finalMapUrl)}`;
-                }
-                mapBtn.href = finalMapUrl;
-                mapContainer.classList.remove('hidden');
-                noMapText.classList.add('hidden');
-            } else {
-                mapContainer.classList.add('hidden');
-                noMapText.classList.remove('hidden');
+            if (hData.img) images.push(hData.img);
+            if (hData.logo) images.push(hData.logo);
+            if (hData.gallery && Array.isArray(hData.gallery)) {
+                images.push(...hData.gallery);
             }
+            if (hData.services) {
+                Object.values(hData.services).forEach(serv => {
+                    if (serv.img) images.push(serv.img);
+                });
+            }
+        }
+        if (images.length === 0) {
+            images.push('https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80');
+        }
+
+        images.forEach((imgUrl, index) => {
+            let slideDiv = document.createElement('div');
+            slideDiv.className = 'hotel-slide' + (index === 0 ? ' active' : '');
+            slideDiv.style.backgroundImage = `url('${imgUrl}')`;
+            slideshowContainer.appendChild(slideDiv);
+        });
+
+        if (images.length > 1) {
+            let currentSlide = 0;
+            slideInterval = setInterval(() => {
+                let slides = slideshowContainer.querySelectorAll('.hotel-slide');
+                if (slides.length === 0) return;
+                slides[currentSlide].classList.remove('active');
+                currentSlide = (currentSlide + 1) % slides.length;
+                slides[currentSlide].classList.add('active');
+            }, 3500);
+        }
+
+        let mapContainer = document.getElementById('hotelMapContainer');
+        let noMapText = document.getElementById('noMapText');
+        let mapBtn = document.getElementById('detailMapBtn');
+
+        mapContainer.classList.add('hidden');
+        noMapText.classList.add('hidden');
+
+        if (hData && hData.mapUrl) {
+            let finalMapUrl = hData.mapUrl.trim();
+            if (!finalMapUrl.startsWith('http://') && !finalMapUrl.startsWith('https://')) {
+                finalMapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(finalMapUrl)}`;
+            }
+            mapBtn.href = finalMapUrl;
+            mapContainer.classList.remove('hidden');
         } else {
-            mapContainer.classList.add('hidden');
             noMapText.classList.remove('hidden');
         }
     });
@@ -484,6 +510,7 @@ function openHotelDetails(hotelRawName, hotelKey) {
 }
 
 function closeHotelDetails() {
+    if (slideInterval) clearInterval(slideInterval);
     document.getElementById('hotelModal').classList.remove('active');
 }
 
@@ -524,7 +551,6 @@ function loadSpecificHotelServices(hotelKey) {
     });
 }
 
-// በክፍያ ሰዓት የሆቴሉን የራሱን የክፍያ አካውንት ከዳታቤዝ አምጥቶ የሚያሳይ ሎጂክ
 function initiateBooking(item) {
     let savedUser = localStorage.getItem('adane_customer');
     if (!savedUser) {
@@ -538,7 +564,6 @@ function initiateBooking(item) {
     document.getElementById('payCustName').value = user.name || '';
     document.getElementById('payCustPhone').value = user.phone || '';
 
-    // የተመረጠውን ሆቴል ዩኒክ ኪ (activeHotelKeyForBooking) በመጠቀም የራሱን አካውንት እናገኛለን
     database.ref('hotels/' + activeHotelKeyForBooking).once('value', (snapshot) => {
         let hData = snapshot.val();
         let paymentBox = document.getElementById('paymentOptionsBox');
