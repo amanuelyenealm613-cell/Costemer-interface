@@ -51,7 +51,7 @@
         </div>
         <div class="drawer-item" onclick="openHistoryModal()">
             <span id="historyMenuText">የተጠቃሚ ታሪክ (History)</span>
-            <span></span>
+            <span>⏲</span>
         </div>
         <div class="drawer-item" onclick="openAccountModal()">
             <span id="profileMenuText">ፕሮፋይል ማስተካከያ (Profile)</span>
@@ -63,7 +63,7 @@
         </div>
         <div class="drawer-item" onclick="logoutCustomer()" style="color: #ef4444;">
             <span id="logoutMenuText">ውጣ (Log Out)</span>
-            <span></span>
+            <span>👉</span>
         </div>
     </div>
 
@@ -118,18 +118,17 @@
         </div>
     </div>
 
-    <!-- PAYMENT MODAL (DINAMICALLY LOADED PER HOTEL) -->
+    <!-- PAYMENT MODAL -->
     <div class="modal-overlay" id="paymentModal">
         <div class="auth-card">
             <button class="close-modal" onclick="closePaymentModal()">✕</button>
             <h3 id="payModalTitle" style="text-align: center; color: var(--primary-gold);">የክፍያ ፎርም</h3>
             <p id="modalServicePrice" style="text-align: center; font-weight: bold; margin-bottom: 12px;"></p>
 
-            <!-- የዚህ ሆቴል ብቻ አካውንቶች እዚህ በዲናሚክ ይጫናሉ -->
             <div class="payment-box" id="paymentOptionsBox">
-                <b>የዚህ ሆቴል የክፍያ አማራጮች:-</b><br>
-                • ቴሌብር / Telebirr: <span id="displayHotelTelebirr">በመጫን ላይ...</span><br>
-                • የባንክ አካውንት: <span id="displayHotelBank">በመጫን ላይ...</span>
+                <b>የክፍያ አማራጮች:-</b><br>
+                • ቴሌብር / Telebirr: 0961807959<br>
+                • የኢትዮጵያ ንግድ ባንክ: 1000123456789
             </div>
 
             <form onsubmit="submitBooking(event)">
@@ -171,18 +170,20 @@
 
     <main id="hotelsContainer"></main>
 
-    <!-- HOTEL DETAILS WITH FIXED ID-BASED MAP LOCATION -->
+    <!-- HOTEL DETAILS -->
     <div class="hotel-modal" id="hotelModal">
         <div class="modal-header-nav">
             <h3 id="modalHotelTitle">HOTEL DETAILS</h3>
             <button class="icon-btn" onclick="closeHotelDetails()">✕</button>
         </div>
 
-        <!-- Hotel Location Banner (Fixed ID-based from Database, won't change with device GPS) -->
+        <!-- Hotel Photos Slideshow Container -->
+        <div class="hotel-slideshow-container" id="hotelSlideshow"></div>
+
+        <!-- Hotel Location Banner -->
         <div class="hotel-location-banner" id="hotelLocationBanner">
             <p style="font-size: 13px; color: var(--text-secondary);">Get direct GPS navigation and directions to our hotel location.</p>
             <div id="hotelMapContainer" class="hidden">
-                <!-- ይህ ሊንክ ከዳታቤዝ በቋሚነት በተቀመጠው ላቲቲዩድ/ሎንግቲዩድ ወይም ዩአርኤል ይሞላል -->
                 <a id="detailMapBtn" href="#" target="_blank" class="btn-map">
                     🗺️ View Hotel Location on Google Maps (Directions)
                 </a>
